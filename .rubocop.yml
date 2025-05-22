@@ -3,6 +3,7 @@ require:
 
 AllCops:
   TargetRubyVersion: 3.3
+  NewCops: enable
 
 Bundler/OrderedGems:
   Enabled: false
