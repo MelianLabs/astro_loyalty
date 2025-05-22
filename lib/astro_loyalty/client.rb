@@ -19,5 +19,36 @@ module AstroLoyalty
       @client_id = client_id
       @token = fetch_token
     end
+
+    def customer_status(customer_id:)
+      post('/customerStatus/', {
+        customerID: customer_id,
+      })
+    end
+
+    private
+
+    def post(path, data)
+      response = self.class.post(path, {
+        headers: {
+          'Authorization' => "Bearer #{@token}",
+          'Content-Type' => 'application/x-www-form-urlencoded',
+        },
+        body: {
+          jsonData: data.to_json,
+        },
+      })
+
+      raise AstroLoyalty::Error, "API error: #{response.message}" unless response.success?
+
+      parsed = JSON.parse(response.body)
+
+      unless parsed['astro_status'] == 100
+        raise AstroLoyalty::Error,
+          "API error: #{parsed['astro_status_messsage'] || parsed.inspect}"
+      end
+
+      parsed['returnData']
+    end
   end
 end
