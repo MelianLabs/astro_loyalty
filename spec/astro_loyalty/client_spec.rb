@@ -186,4 +186,39 @@ RSpec.describe AstroLoyalty::Client do
       expect(result['astro_customer_id']).to eq('astro789')
     end
   end
+
+  describe '#add_customer' do
+    let(:add_customer_response) do
+      {
+        status: 100,
+        returnData: {
+          astro_customer_id: '123456',
+        },
+      }.to_json
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/addCustomer/',
+        hash_including(
+          headers: hash_including(
+            'Authorization' => 'Bearer sample_token',
+            'Content-Type' => 'application/x-www-form-urlencoded',
+          ),
+          body: hash_including(jsonData: /"customerID":"abc123"/)
+        )
+      ).and_return(double(success?: true, body: add_customer_response))
+    end
+
+    it 'adds a new customer with required fields' do
+      result = client.add_customer(
+        customer_id: 'abc123',
+        first_name: 'Jane',
+        last_name: 'Doe'
+      )
+
+      expect(result).to be_a(Hash)
+      expect(result['astro_customer_id']).to eq('123456')
+    end
+  end
 end

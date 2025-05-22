@@ -42,6 +42,17 @@ module AstroLoyalty
       })
     end
 
+    # Supported attributes: email_address, address, city, state, zip, phone
+    def add_customer(customer_id:, first_name:, last_name:, **attributes)
+      payload = {
+        customerID: customer_id,
+        first_name:,
+        last_name:,
+      }.merge(attributes)
+
+      post('/addCustomer/', payload)
+    end
+
     private
 
     def post(path, data)
