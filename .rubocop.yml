@@ -1,8 +1,112 @@
+require:
+  - rubocop-rspec
+
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.3
 
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
+Bundler/OrderedGems:
+  Enabled: false
 
-Style/StringLiteralsInInterpolation:
-  EnforcedStyle: double_quotes
+Layout/DotPosition:
+  Enabled: true
+  EnforcedStyle: 'trailing'
+
+RSpec/SpecFilePathSuffix:
+  Enabled: true
+
+RSpec/ContextWording:
+  Prefixes:
+    - and
+    - when
+    - with
+    - without
+    - if
+    - unless
+    - for
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Metrics/AbcSize:
+  CountRepeatedAttributes: false
+
+Metrics/BlockLength:
+  CountAsOne: ['array', 'hash', 'heredoc']
+  Enabled: true
+  Exclude:
+    - spec/**/*
+    - /**/*_controller.rb
+    - /**/routes.rb
+
+Metrics/ClassLength:
+  CountAsOne: ['array', 'hash', 'heredoc']
+  Exclude:
+    - /**/*_controller.rb
+
+Metrics/MethodLength:
+  CountAsOne: ['array', 'hash', 'heredoc']
+  Max: 10
+
+Metrics/ModuleLength:
+  CountAsOne: ['array', 'hash', 'heredoc']
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Style/Documentation:
+  Enabled: false
+
+Style/MethodCallWithArgsParentheses:
+  Exclude:
+    - spec/**/*
+
+Style/NumericLiterals:
+  Enabled: false
+
+# Use a trailing comma to keep diffs clean when elements are inserted or removed
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+  Exclude:
+    - spec/**/*
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/BlockDelimiters:
+  AllowedMethods: [let, subject, let!]
+
+RSpec/ExampleLength:
+  CountAsOne: ['array', 'hash', 'heredoc']
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/NamedSubject:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/SharedExamples:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Style/DoubleNegation:
+  Enabled: false
