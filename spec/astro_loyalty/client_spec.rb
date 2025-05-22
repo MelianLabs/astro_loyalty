@@ -88,4 +88,71 @@ RSpec.describe AstroLoyalty::Client do
       )
     end
   end
+
+  describe '#search_customer' do
+    let(:search_customer_response) do
+      {
+        astro_status: 100,
+        returnData: {
+          customerID: '123',
+          first_name: 'John',
+          last_name: 'Doe',
+          email_address: 'john@example.com',
+          phone: '1234567890',
+        },
+      }.to_json
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/searchCustomer/',
+        hash_including(
+          headers: hash_including(
+            'Authorization' => 'Bearer sample_token',
+            'Content-Type' => 'application/x-www-form-urlencoded',
+          ),
+          body: hash_including(jsonData: json_data)
+        )
+      ).and_return(double(success?: true, body: search_customer_response))
+    end
+
+    context 'when searching by email' do
+      let(:json_data) { /"email_address":"john@example\.com"/ }
+
+      it 'returns the customer details' do
+        expect(client.search_customer(email_address: 'john@example.com')).to eq(
+          'customerID' => '123',
+          'first_name' => 'John',
+          'last_name' => 'Doe',
+          'email_address' => 'john@example.com',
+          'phone' => '1234567890'
+        )
+      end
+    end
+
+    context 'when searching by phone' do
+      let(:json_data) { /"phone":"1234567890"/ }
+
+      it 'returns the customer details' do
+        expect(client.search_customer(phone: '1234567890')).to eq(
+          'customerID' => '123',
+          'first_name' => 'John',
+          'last_name' => 'Doe',
+          'email_address' => 'john@example.com',
+          'phone' => '1234567890'
+        )
+      end
+    end
+
+    context 'when neither email nor phone is provided' do
+      let(:json_data) { nil }
+
+      it 'raises an ArgumentError' do
+        expect { client.search_customer }.to raise_error(
+          ArgumentError,
+          'Either email_address or phone must be provided'
+        )
+      end
+    end
+  end
 end

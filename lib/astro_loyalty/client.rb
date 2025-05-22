@@ -26,6 +26,15 @@ module AstroLoyalty
       })
     end
 
+    def search_customer(email_address: nil, phone: nil)
+      raise ArgumentError, 'Either email_address or phone must be provided' if email_address.nil? && phone.nil?
+
+      post('/searchCustomer/', {
+        email_address:,
+        phone:,
+      })
+    end
+
     private
 
     def post(path, data)
@@ -41,14 +50,7 @@ module AstroLoyalty
 
       raise AstroLoyalty::Error, "API error: #{response.message}" unless response.success?
 
-      parsed = JSON.parse(response.body)
-
-      unless parsed['astro_status'] == 100
-        raise AstroLoyalty::Error,
-          "API error: #{parsed['astro_status_messsage'] || parsed.inspect}"
-      end
-
-      parsed['returnData']
+      JSON.parse(response.body)['returnData']
     end
   end
 end
