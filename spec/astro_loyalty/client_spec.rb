@@ -155,4 +155,35 @@ RSpec.describe AstroLoyalty::Client do
       end
     end
   end
+
+  describe '#link_customer' do
+    let(:link_customer_response) do
+      {
+        status: 100,
+        returnData: {
+          astro_customer_id: 'astro789',
+        },
+      }.to_json
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/linkCustomer/',
+        hash_including(
+          headers: hash_including(
+            'Authorization' => 'Bearer sample_token',
+            'Content-Type' => 'application/x-www-form-urlencoded',
+          ),
+          body: hash_including(jsonData: /"customerID":"abc123"/),
+        )
+      ).and_return(double(success?: true, body: link_customer_response))
+    end
+
+    it 'links internal customer id to astro customer id' do
+      result = client.link_customer(customer_id: 'abc123', astro_customer_id: 'astro789')
+
+      expect(result).to be_a(Hash)
+      expect(result['astro_customer_id']).to eq('astro789')
+    end
+  end
 end
