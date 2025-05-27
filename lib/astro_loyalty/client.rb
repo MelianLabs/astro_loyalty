@@ -68,7 +68,7 @@ module AstroLoyalty
 
       raise AstroLoyalty::Error, "API error: #{response.message}" unless response.success?
 
-      JSON.parse(response.body)['returnData']
+      JSON.parse(response.body)['returnData'].presence || {}
     end
   end
 end
