@@ -26,6 +26,12 @@ module AstroLoyalty
       })
     end
 
+    def customer_reward_status(customer_id:)
+      post('/customerRewardStatus/', {
+        customerID: customer_id,
+      })
+    end
+
     def search_customer(email_address: nil, phone: nil)
       raise ArgumentError, 'Either email_address or phone must be provided' if email_address.nil? && phone.nil?
 
