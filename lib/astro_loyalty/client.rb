@@ -38,7 +38,7 @@ module AstroLoyalty
     def link_customer(customer_id:, astro_customer_id:)
       post('/linkCustomer/', {
         customerID: customer_id,
-        astroCustomerID: astro_customer_id,
+        astro_customer_id:,
       })
     end
 
