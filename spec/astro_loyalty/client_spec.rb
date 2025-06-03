@@ -221,4 +221,43 @@ RSpec.describe AstroLoyalty::Client do
       expect(result['astro_customer_id']).to eq('123456')
     end
   end
+
+  describe '#list_offers' do
+    let(:astro_program_title) { 'Almo Nature |  Buy 4, Get 1 FREE on 2.47oz HQS Cat Cans' }
+    let(:list_offers_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+        returnData: {
+          program_list: [
+            {
+              astro_mfg_id: '240',
+              astro_mfg_name: 'Almo Nature',
+              astro_program_id: '18564',
+              astro_program_title:,
+              astro_program_long_description: 'Delicious, nutritious dog food.',
+              astro_program_image: 'https://api.astroloyalty.com/display_image.php?ec=z53mi3VCNs5cWyrSB%2BBsn63GJg%3D%3D',
+              in_store_only: 1,
+              astro_program_start_date: '2025-04-01',
+              astro_program_end_date: '2025-06-30',
+            },
+          ],
+        },
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/listOffers/',
+        hash_including(headers: hash_including('Authorization' => 'Bearer sample_token',
+          'Content-Type' => 'application/x-www-form-urlencoded'))
+      ).and_return(double(success?: true, body: list_offers_response.to_json))
+    end
+
+    it 'returns the list of offers' do
+      result = client.list_offers
+      expect(result).to be_a(Hash)
+      expect(result['program_list'].first['astro_program_title']).to eq(astro_program_title)
+    end
+  end
 end

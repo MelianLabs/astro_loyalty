@@ -59,6 +59,10 @@ module AstroLoyalty
       post('/addCustomer/', payload)
     end
 
+    def list_offers
+      post('/listOffers/', {})
+    end
+
     private
 
     def post(path, data)
@@ -74,7 +78,8 @@ module AstroLoyalty
 
       raise AstroLoyalty::Error, "API error: #{response.message}" unless response.success?
 
-      JSON.parse(response.body)['returnData'].presence || {}
+      return_data = JSON.parse(response.body)['returnData']
+      return_data.empty? ? {} : return_data
     end
   end
 end
