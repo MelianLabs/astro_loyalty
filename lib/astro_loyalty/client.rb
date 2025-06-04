@@ -63,6 +63,31 @@ module AstroLoyalty
       post('/listOffers/', {})
     end
 
+    def add_transaction_batch(customer_id:, transactions:)
+      required_keys = %i[transaction_id item_code]
+      transactions.each_with_index do |txn, index|
+        raise ArgumentError, "Transaction at index #{index} must be a Hash" unless txn.is_a?(Hash)
+
+        missing = required_keys - txn.keys.map(&:to_sym)
+
+        unless missing.empty?
+          raise ArgumentError, "Transaction at index #{index} is missing required keys: #{missing.join(', ')}"
+        end
+      end
+
+      post('/addTransactionBatch/', {
+        customerID: customer_id,
+        transactions: transactions.map do |txn|
+          {
+            transactionID: txn[:transaction_id],
+            item_code: txn[:item_code],
+            item_qty: txn[:item_qty],
+            item_transaction_date: txn[:item_transaction_date],
+          }
+        end,
+      })
+    end
+
     private
 
     def post(path, data)

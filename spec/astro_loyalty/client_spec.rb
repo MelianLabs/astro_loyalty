@@ -20,6 +20,12 @@ RSpec.describe AstroLoyalty::Client do
     }.to_json
   end
   let(:client) { described_class.new(**credentials) }
+  let(:headers) do
+    {
+      'Authorization' => 'Bearer sample_token',
+      'Content-Type' => 'application/x-www-form-urlencoded',
+    }
+  end
 
   before do
     allow(described_class).to receive(:post).with(
@@ -71,10 +77,7 @@ RSpec.describe AstroLoyalty::Client do
       allow(described_class).to receive(:post).with(
         '/customerStatus/',
         hash_including(
-          headers: hash_including(
-            'Authorization' => 'Bearer sample_token',
-            'Content-Type' => 'application/x-www-form-urlencoded',
-          ),
+          headers:,
           body: hash_including(jsonData: /"customerID":"123"/),
         )
       ).and_return(double(success?: true, body: customer_status_response))
@@ -107,10 +110,7 @@ RSpec.describe AstroLoyalty::Client do
       allow(described_class).to receive(:post).with(
         '/searchCustomer/',
         hash_including(
-          headers: hash_including(
-            'Authorization' => 'Bearer sample_token',
-            'Content-Type' => 'application/x-www-form-urlencoded',
-          ),
+          headers:,
           body: hash_including(jsonData: json_data)
         )
       ).and_return(double(success?: true, body: search_customer_response))
@@ -170,10 +170,7 @@ RSpec.describe AstroLoyalty::Client do
       allow(described_class).to receive(:post).with(
         '/linkCustomer/',
         hash_including(
-          headers: hash_including(
-            'Authorization' => 'Bearer sample_token',
-            'Content-Type' => 'application/x-www-form-urlencoded',
-          ),
+          headers:,
           body: hash_including(jsonData: /"customerID":"abc123"/),
         )
       ).and_return(double(success?: true, body: link_customer_response))
@@ -201,10 +198,7 @@ RSpec.describe AstroLoyalty::Client do
       allow(described_class).to receive(:post).with(
         '/addCustomer/',
         hash_including(
-          headers: hash_including(
-            'Authorization' => 'Bearer sample_token',
-            'Content-Type' => 'application/x-www-form-urlencoded',
-          ),
+          headers:,
           body: hash_including(jsonData: /"customerID":"abc123"/)
         )
       ).and_return(double(success?: true, body: add_customer_response))
@@ -249,8 +243,7 @@ RSpec.describe AstroLoyalty::Client do
     before do
       allow(described_class).to receive(:post).with(
         '/listOffers/',
-        hash_including(headers: hash_including('Authorization' => 'Bearer sample_token',
-          'Content-Type' => 'application/x-www-form-urlencoded'))
+        hash_including(headers:)
       ).and_return(double(success?: true, body: list_offers_response.to_json))
     end
 
@@ -258,6 +251,95 @@ RSpec.describe AstroLoyalty::Client do
       result = client.list_offers
       expect(result).to be_a(Hash)
       expect(result['program_list'].first['astro_program_title']).to eq(astro_program_title)
+    end
+  end
+
+  describe '#add_transaction_batch' do
+    let(:expected_payload) do
+      {
+        customerID: 'abc123',
+        transactions: [
+          {
+            transactionID: 'TXN-002',
+            item_code: '1234567890',
+            item_qty: '1',
+            item_transaction_date: '2025-01-01',
+          },
+          {
+            transactionID: 'TXN-003',
+            item_code: '1234567891',
+            item_qty: '2',
+            item_transaction_date: '2025-01-01',
+          },
+        ],
+      }
+    end
+    let(:add_transaction_batch_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+        returnData: [
+          {
+            transaction_status: 100,
+            transaction_status_message: "Transaction\nAdded",
+            transactionID: 'TXN-002',
+            astro_transaction_id: '310645666',
+            astro_program_id: '1209',
+            astro_program_title: "Lotus\nDOG | 20lb & 25lb Kibble LG | Official Buy 12 Get 1\nFree",
+          },
+          {
+            transaction_status: 100,
+            transaction_status_message: "Transaction\nAdded",
+            transactionID: 'TXN-003',
+            astro_transaction_id: '310645667',
+            astro_program_id: '1209',
+            astro_program_title: "Lotus\nap DOG | 20lb & 25lb Kibble LG | Official Buy 12 Get 1 Free",
+          },
+        ],
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/addTransactionBatch/',
+        {
+          headers:,
+          body: {
+            jsonData: expected_payload.to_json,
+          },
+        }
+      ).and_return(double(success?: true, body: add_transaction_batch_response.to_json))
+    end
+
+    it 'adds the transactions' do
+      result = client.add_transaction_batch(
+        customer_id: 'abc123',
+        transactions: [
+          {
+            transaction_id: 'TXN-002',
+            item_qty: '1',
+            item_code: '1234567890',
+            item_transaction_date: '2025-01-01',
+          },
+          {
+            transaction_id: 'TXN-003',
+            item_qty: '2',
+            item_code: '1234567891',
+            item_transaction_date: '2025-01-01',
+          },
+        ],
+      )
+      expect(result).to be_a(Array)
+      expect(result.map { |txn| txn['transaction_status'] }).to eq([100, 100])
+    end
+
+    it 'validates the transactions' do
+      expect do
+        client.add_transaction_batch(
+          customer_id: 'abc123',
+          transactions: [{ transaction_id: 'TXN-002' }]
+        )
+      end.to raise_error(ArgumentError, /Transaction at index 0 is missing required keys: item_code/)
     end
   end
 end
