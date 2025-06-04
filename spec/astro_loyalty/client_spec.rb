@@ -366,4 +366,53 @@ RSpec.describe AstroLoyalty::Client do
       expect(result.first['transactionDeleted']).to be(true)
     end
   end
+
+  describe '#add_redemption' do
+    let(:add_redemption_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/addRedemption/',
+        hash_including(
+          headers:,
+          body: { jsonData: { customerID: 'abc123', astro_reward_id: '1234567890',
+                              astro_item_id: '1234567891' }.to_json }
+        )
+      ).and_return(double(success?: true, body: add_redemption_response.to_json))
+    end
+
+    it 'adds the redemption' do
+      result = client.add_redemption(customer_id: 'abc123', astro_reward_id: '1234567890', astro_item_id: '1234567891')
+      expect(result).to be_a(Hash)
+    end
+  end
+
+  describe '#remove_redemption' do
+    let(:add_redemption_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/removeRedemption/',
+        hash_including(
+          headers:,
+          body: { jsonData: { customerID: 'abc123', astro_reward_id: '1234567890' }.to_json }
+        )
+      ).and_return(double(success?: true, body: add_redemption_response.to_json))
+    end
+
+    it 'removes the redemption' do
+      result = client.remove_redemption(customer_id: 'abc123', astro_reward_id: '1234567890')
+      expect(result).to be_a(Hash)
+    end
+  end
 end

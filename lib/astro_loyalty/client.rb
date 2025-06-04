@@ -95,6 +95,21 @@ module AstroLoyalty
       })
     end
 
+    def add_redemption(customer_id:, astro_reward_id:, astro_item_id:)
+      post('/addRedemption/', {
+        customerID: customer_id,
+        astro_reward_id:,
+        astro_item_id:,
+      })
+    end
+
+    def remove_redemption(customer_id:, astro_reward_id:)
+      post('/removeRedemption/', {
+        customerID: customer_id,
+        astro_reward_id:,
+      })
+    end
+
     private
 
     def post(path, data)
@@ -111,7 +126,7 @@ module AstroLoyalty
       raise AstroLoyalty::Error, "API error: #{response.message}" unless response.success?
 
       return_data = JSON.parse(response.body)['returnData']
-      return_data.empty? ? {} : return_data
+      return_data.nil? || return_data.empty? ? {} : return_data
     end
   end
 end
