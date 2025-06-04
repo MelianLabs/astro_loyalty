@@ -88,6 +88,13 @@ module AstroLoyalty
       })
     end
 
+    def remove_transaction(customer_id:, transaction_id:)
+      post('/removeTransaction/', {
+        customerID: customer_id,
+        transactionID: transaction_id,
+      })
+    end
+
     private
 
     def post(path, data)

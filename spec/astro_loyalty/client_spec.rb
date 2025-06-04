@@ -342,4 +342,28 @@ RSpec.describe AstroLoyalty::Client do
       end.to raise_error(ArgumentError, /Transaction at index 0 is missing required keys: item_code/)
     end
   end
+
+  describe '#remove_transaction' do
+    let(:remove_transaction_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+        returnData: [{ transaction_status: 100, transaction_status_message: 'Success', transactionID: 'TXN-004',
+                       astro_transaction_id: '310647863', transactionDeleted: true }],
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/removeTransaction/',
+        hash_including(headers:, body: { jsonData: { customerID: 'abc123', transactionID: 'TXN-004' }.to_json })
+      ).and_return(double(success?: true, body: remove_transaction_response.to_json))
+    end
+
+    it 'removes the transaction' do
+      result = client.remove_transaction(customer_id: 'abc123', transaction_id: 'TXN-004')
+      expect(result).to be_a(Array)
+      expect(result.first['transactionDeleted']).to be(true)
+    end
+  end
 end
