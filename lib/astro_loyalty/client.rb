@@ -119,6 +119,13 @@ module AstroLoyalty
       })
     end
 
+    def check_redemption_eligibility(customer_id:, item_code:)
+      post('/checkRedemptionEligibility/', {
+        customerID: customer_id,
+        item_code:,
+      })
+    end
+
     private
 
     def post(path, data)

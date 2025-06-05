@@ -441,4 +441,29 @@ RSpec.describe AstroLoyalty::Client do
       expect(result).to be_a(Hash)
     end
   end
+
+  describe '#check_redemption_eligibility' do
+    let(:check_redemption_eligibility_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+        returnData: {
+          isEligible: false,
+        },
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/checkRedemptionEligibility/',
+        hash_including(headers:, body: { jsonData: { customerID: 'abc123', item_code: '123' }.to_json })
+      ).and_return(double(success?: true, body: check_redemption_eligibility_response.to_json))
+    end
+
+    it 'checks the redemption eligibility' do
+      result = client.check_redemption_eligibility(customer_id: 'abc123', item_code: '123')
+      expect(result).to be_a(Hash)
+      expect(result['isEligible']).to be(false)
+    end
+  end
 end
