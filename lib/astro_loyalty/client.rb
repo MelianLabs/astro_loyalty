@@ -63,6 +63,15 @@ module AstroLoyalty
       post('/listOffers/', {})
     end
 
+    def add_offer_transaction(customer_id:, transaction_id:, item_code:, item_qty: 1)
+      post('/addOfferTransaction/', {
+        customerID: customer_id,
+        transactionID: transaction_id,
+        item_code:,
+        item_qty:,
+      })
+    end
+
     def add_transaction_batch(customer_id:, transactions:)
       required_keys = %i[transaction_id item_code]
       transactions.each_with_index do |txn, index|

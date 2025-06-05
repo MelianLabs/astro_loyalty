@@ -415,4 +415,30 @@ RSpec.describe AstroLoyalty::Client do
       expect(result).to be_a(Hash)
     end
   end
+
+  describe '#add_offer_transaction' do
+    let(:add_offer_transaction_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/addOfferTransaction/',
+        hash_including(
+          headers:,
+          body: { jsonData: { customerID: 'abc123', transactionID: '1234567890',
+                              item_code: '123', item_qty: 1 }.to_json }
+        )
+      ).and_return(double(success?: true, body: add_offer_transaction_response.to_json))
+    end
+
+    it 'adds the offer transaction' do
+      result = client.add_offer_transaction(customer_id: 'abc123', transaction_id: '1234567890',
+        item_code: '123')
+      expect(result).to be_a(Hash)
+    end
+  end
 end
