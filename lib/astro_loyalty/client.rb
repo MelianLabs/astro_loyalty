@@ -104,6 +104,13 @@ module AstroLoyalty
       })
     end
 
+    def remove_offer_transaction(customer_id:, transaction_id:)
+      post('/removeOfferTransaction/', {
+        customerID: customer_id,
+        transactionID: transaction_id,
+      })
+    end
+
     def add_redemption(customer_id:, astro_reward_id:, astro_item_id:)
       post('/addRedemption/', {
         customerID: customer_id,
