@@ -466,6 +466,32 @@ RSpec.describe AstroLoyalty::Client do
     end
   end
 
+  describe '#add_offer_redemption' do
+    let(:add_offer_redemption_response) do
+      {
+        astro_status: 100,
+        astro_status_message: 'Success',
+      }
+    end
+
+    before do
+      allow(described_class).to receive(:post).with(
+        '/addOfferRedemption/',
+        hash_including(
+          headers:,
+          body: { jsonData: { customerID: 'abc123', astro_reward_id: '1234567890',
+                              astro_item_id: '1234567891' }.to_json }
+        )
+      ).and_return(double(success?: true, body: add_offer_redemption_response.to_json))
+    end
+
+    it 'adds the offer redemption' do
+      result = client.add_offer_redemption(customer_id: 'abc123', astro_reward_id: '1234567890',
+        astro_item_id: '1234567891')
+      expect(result).to be_a(Hash)
+    end
+  end
+
   describe '#check_redemption_eligibility' do
     let(:check_redemption_eligibility_response) do
       {

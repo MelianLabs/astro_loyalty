@@ -126,6 +126,14 @@ module AstroLoyalty
       })
     end
 
+    def add_offer_redemption(customer_id:, astro_reward_id:, astro_item_id:)
+      post('/addOfferRedemption/', {
+        customerID: customer_id,
+        astro_reward_id:,
+        astro_item_id:,
+      })
+    end
+
     def check_redemption_eligibility(customer_id:, item_code:)
       post('/checkRedemptionEligibility/', {
         customerID: customer_id,
