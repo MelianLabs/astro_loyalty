@@ -97,11 +97,13 @@ module AstroLoyalty
       })
     end
 
-    def remove_transaction(customer_id:, transaction_id:)
-      post('/removeTransaction/', {
+    def remove_transaction(customer_id:, transaction_id:, quantity: nil)
+      payload = {
         customerID: customer_id,
         transactionID: transaction_id,
-      })
+      }
+      payload[:item_qty] = quantity if quantity
+      post('/removeTransaction/', payload)
     end
 
     def remove_offer_transaction(customer_id:, transaction_id:)

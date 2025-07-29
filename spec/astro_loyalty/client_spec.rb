@@ -353,17 +353,37 @@ RSpec.describe AstroLoyalty::Client do
       }
     end
 
-    before do
-      allow(described_class).to receive(:post).with(
-        '/removeTransaction/',
-        hash_including(headers:, body: { jsonData: { customerID: 'abc123', transactionID: 'TXN-004' }.to_json })
-      ).and_return(double(success?: true, body: remove_transaction_response.to_json))
+    context 'without quantity' do
+      before do
+        allow(described_class).to receive(:post).with(
+          '/removeTransaction/',
+          hash_including(headers:, body: { jsonData: { customerID: 'abc123', transactionID: 'TXN-004' }.to_json })
+        ).and_return(double(success?: true, body: remove_transaction_response.to_json))
+      end
+
+      it 'removes the transaction' do
+        result = client.remove_transaction(customer_id: 'abc123', transaction_id: 'TXN-004')
+        expect(result).to be_a(Array)
+        expect(result.first['transactionDeleted']).to be(true)
+      end
     end
 
-    it 'removes the transaction' do
-      result = client.remove_transaction(customer_id: 'abc123', transaction_id: 'TXN-004')
-      expect(result).to be_a(Array)
-      expect(result.first['transactionDeleted']).to be(true)
+    context 'with quantity' do
+      let(:quantity) { 2 }
+
+      before do
+        allow(described_class).to receive(:post).with(
+          '/removeTransaction/',
+          hash_including(headers:,
+            body: { jsonData: { customerID: 'abc123', transactionID: 'TXN-004', item_qty: quantity }.to_json })
+        ).and_return(double(success?: true, body: remove_transaction_response.to_json))
+      end
+
+      it 'removes the transaction with quantity' do
+        result = client.remove_transaction(customer_id: 'abc123', transaction_id: 'TXN-004', quantity:)
+        expect(result).to be_a(Array)
+        expect(result.first['transactionDeleted']).to be(true)
+      end
     end
   end
 
