@@ -128,11 +128,17 @@ module AstroLoyalty
       })
     end
 
-    def add_offer_redemption(customer_id:, astro_reward_id:, astro_item_id:)
+    def add_offer_redemption(customer_id:, astro_reward_id:, astro_item_id:, customer_email_address:, # rubocop:disable Metrics/ParameterLists
+                             customer_address:, customer_city:, customer_state:, customer_zip:)
       post('/addOfferRedemption/', {
         customerID: customer_id,
         astro_reward_id:,
         astro_item_id:,
+        customer_email_address:,
+        customer_address:,
+        customer_city:,
+        customer_state:,
+        customer_zip:,
       })
     end
 
