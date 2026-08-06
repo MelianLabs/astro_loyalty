@@ -479,10 +479,31 @@ RSpec.describe AstroLoyalty::Client do
       ).and_return(double(success?: true, body: add_offer_transaction_response.to_json))
     end
 
-    it 'adds the offer transaction' do
+    it 'adds the offer transaction, reporting the envelope status it answered with' do
       result = client.add_offer_transaction(customer_id: 'abc123', transaction_id: '1234567890',
         item_code: '123')
-      expect(result).to be_a(Hash)
+
+      expect(result).to eq('astro_status' => 100, 'astro_status_message' => 'Success')
+      expect(described_class).to be_success(result)
+    end
+
+    context 'when Astro rejects the transaction' do
+      let(:add_offer_transaction_response) do
+        {
+          astro_status: 201,
+          astro_status_message: 'TransactionID Already Exists',
+        }
+      end
+
+      # This endpoint sends no returnData either way, so before the envelope status was kept a
+      # rejection reached the caller as {} — the same value a success produced.
+      it 'surfaces the rejection instead of an empty hash' do
+        result = client.add_offer_transaction(customer_id: 'abc123', transaction_id: '1234567890',
+          item_code: '123')
+
+        expect(result['astro_status_message']).to eq('TransactionID Already Exists')
+        expect(described_class).not_to be_success(result)
+      end
     end
   end
 
@@ -494,21 +515,32 @@ RSpec.describe AstroLoyalty::Client do
       }
     end
 
+    let(:shipping_attributes) do
+      {
+        customer_email_address: 'buyer@example.com',
+        customer_address: '1 Main St',
+        customer_city: 'Portland',
+        customer_state: 'OR',
+        customer_zip: '97201',
+      }
+    end
+
     before do
       allow(described_class).to receive(:post).with(
         '/addOfferRedemption/',
         hash_including(
           headers:,
           body: { jsonData: { customerID: 'abc123', astro_reward_id: '1234567890',
-                              astro_item_id: '1234567891' }.to_json }
+                              astro_item_id: '1234567891' }.merge(shipping_attributes).to_json }
         )
       ).and_return(double(success?: true, body: add_offer_redemption_response.to_json))
     end
 
     it 'adds the offer redemption' do
       result = client.add_offer_redemption(customer_id: 'abc123', astro_reward_id: '1234567890',
-        astro_item_id: '1234567891')
-      expect(result).to be_a(Hash)
+        astro_item_id: '1234567891', **shipping_attributes)
+
+      expect(result).to eq('astro_status' => 100, 'astro_status_message' => 'Success')
     end
   end
 
