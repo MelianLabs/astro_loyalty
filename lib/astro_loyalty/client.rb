@@ -11,7 +11,20 @@ module AstroLoyalty
 
     base_uri 'https://api.astroloyalty.com/api/json'
 
+    # Astro reports the application-level outcome in the response envelope, not the HTTP status.
+    ASTRO_STATUS_KEY = 'astro_status'
+    ASTRO_STATUS_MESSAGE_KEY = 'astro_status_message'
+    ASTRO_STATUS_SUCCESS = 100
+
     attr_reader :token
+
+    # True when a response Astro answered with is an application-level success. Callers need this
+    # for the endpoints that return no returnData, where the envelope status is the whole answer.
+    def self.success?(result)
+      return true unless result.is_a?(Hash) && result.key?(ASTRO_STATUS_KEY)
+
+      result[ASTRO_STATUS_KEY].to_i == ASTRO_STATUS_SUCCESS
+    end
 
     def initialize(username:, password:, client_id:)
       @username = username
@@ -164,8 +177,19 @@ module AstroLoyalty
 
       raise AstroLoyalty::Error, "API error: #{response.message}" unless response.success?
 
-      return_data = JSON.parse(response.body)['returnData']
-      return_data.nil? || return_data.empty? ? {} : return_data
+      extract_return_data(JSON.parse(response.body))
+    end
+
+    # Astro answers HTTP 200 for application-level failures too, carrying the real outcome in
+    # astro_status / astro_status_message. Endpoints like /addOfferTransaction/, /addRedemption/
+    # and /addOfferRedemption/ send no returnData at all, so collapsing an empty returnData to {}
+    # threw away the only signal they give — a rejected write was indistinguishable from an
+    # accepted one. Fall back to the envelope status instead of {}.
+    def extract_return_data(body)
+      return_data = body['returnData']
+      return return_data unless return_data.nil? || return_data.empty?
+
+      body.slice(ASTRO_STATUS_KEY, ASTRO_STATUS_MESSAGE_KEY)
     end
   end
 end
