@@ -126,12 +126,17 @@ module AstroLoyalty
       })
     end
 
-    def add_redemption(customer_id:, astro_reward_id:, astro_item_id:)
+    # Some manufacturer programs refuse a redemption without the customer's email (status 720) or
+    # address (710); the rest accept it without them, so only the details given are sent.
+    def add_redemption(customer_id:, astro_reward_id:, astro_item_id:, customer_email_address: nil, # rubocop:disable Metrics/ParameterLists
+                       customer_address: nil, customer_city: nil, customer_state: nil, customer_zip: nil)
+      customer_details = { customer_email_address:, customer_address:, customer_city:, customer_state:,
+                           customer_zip: }.compact
       post('/addRedemption/', {
         customerID: customer_id,
         astro_reward_id:,
         astro_item_id:,
-      })
+      }.merge(customer_details))
     end
 
     def remove_redemption(customer_id:, astro_reward_id:)

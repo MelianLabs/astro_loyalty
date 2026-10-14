@@ -76,6 +76,9 @@ client.check_redemption_eligibility(customer_id: '123', item_code: 'SKU123')
 
 # Add or remove a redemption
 client.add_redemption(customer_id: '123', astro_reward_id: '789', astro_item_id: '101')
+# Programs that require the customer's email or address refuse the redemption without them (status 720/710)
+client.add_redemption(customer_id: '123', astro_reward_id: '789', astro_item_id: '101',
+                      customer_email_address: 'jane@example.com')
 client.remove_redemption(customer_id: '123', astro_reward_id: '789')
 
 # Add an offer redemption (requires the customer's contact details)
