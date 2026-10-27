@@ -26,11 +26,19 @@ module AstroLoyalty
       result[ASTRO_STATUS_KEY].to_i == ASTRO_STATUS_SUCCESS
     end
 
-    def initialize(username:, password:, client_id:)
+    # refresh_expired_token: on an Invalid Token envelope, get a new token and retry the call once.
+    # token_refresher: optional callable given the rejected token; a token it returns is used
+    #   instead of fetching one (e.g. a newer token another process already cached), nil fetches.
+    # on_token_refresh: optional callable told path:, token: and result: after each retry.
+    def initialize(username:, password:, client_id:, token: nil, refresh_expired_token: false, # rubocop:disable Metrics/ParameterLists
+                   token_refresher: nil, on_token_refresh: nil)
       @username = username
       @password = password
       @client_id = client_id
-      @token = fetch_token
+      @refresh_expired_token = refresh_expired_token
+      @token_refresher = token_refresher
+      @on_token_refresh = on_token_refresh
+      @token = token || fetch_token
     end
 
     def customer_status(customer_id:)
@@ -170,6 +178,19 @@ module AstroLoyalty
     private
 
     def post(path, data)
+      result = request(path, data)
+      return result unless @refresh_expired_token && invalid_token?(result)
+
+      new_token = refreshed_token
+      return result if new_token.nil?
+
+      @token = new_token
+      retried = request(path, data)
+      @on_token_refresh&.call(path:, token: new_token, result: retried)
+      retried
+    end
+
+    def request(path, data)
       response = self.class.post(path, {
         headers: {
           'Authorization' => "Bearer #{@token}",

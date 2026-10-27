@@ -110,6 +110,24 @@ end
 
 An `AstroLoyalty::Error` is raised when the API responds with a non-2xx HTTP status.
 
+### Expired tokens
+
+A token is fetched once, when the client is built. Astro answers a call made with an expired or revoked token with HTTP 200 and `astro_status` 250 "Invalid Token". Pass `refresh_expired_token: true` to have the client get a new token and retry that call once; a second 250 is returned as is. If the new token cannot be fetched, the original 250 is returned rather than raising.
+
+```ruby
+client = AstroLoyalty::Client.new(
+  username: 'your_username',
+  password: 'your_password',
+  client_id: 'your_client_id',
+  token: cached_token,                                   # optional: skip the token request
+  refresh_expired_token: true,
+  token_refresher: ->(rejected_token) { newer_cached_token_or_nil(rejected_token) }, # optional
+  on_token_refresh: ->(path:, token:, result:) { cache_token(token) },                # optional
+)
+```
+
+`token_refresher` is given the rejected token and may return a newer one (for example a token another process already cached); returning `nil` fetches a new token. `on_token_refresh` is called after each retry with the request path, the new token and the retried call's result.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
