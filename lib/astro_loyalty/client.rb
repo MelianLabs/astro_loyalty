@@ -29,7 +29,8 @@ module AstroLoyalty
     # refresh_expired_token: on an Invalid Token envelope, get a new token and retry the call once.
     # token_refresher: optional callable given the rejected token; a token it returns is used
     #   instead of fetching one (e.g. a newer token another process already cached), nil fetches.
-    # on_token_refresh: optional callable told path:, token: and result: after each retry.
+    # on_token_refresh: optional callable told path:, token: and result: after each refresh; token is
+    #   nil when no new token could be fetched, and result is then the original rejection.
     def initialize(username:, password:, client_id:, token: nil, refresh_expired_token: false, # rubocop:disable Metrics/ParameterLists
                    token_refresher: nil, on_token_refresh: nil)
       @username = username
@@ -181,13 +182,7 @@ module AstroLoyalty
       result = request(path, data)
       return result unless @refresh_expired_token && invalid_token?(result)
 
-      new_token = refreshed_token
-      return result if new_token.nil?
-
-      @token = new_token
-      retried = request(path, data)
-      @on_token_refresh&.call(path:, token: new_token, result: retried)
-      retried
+      retry_with_new_token(path, data, result)
     end
 
     def request(path, data)

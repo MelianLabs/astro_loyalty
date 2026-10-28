@@ -19,6 +19,19 @@ module AstroLoyalty
 
     private
 
+    def retry_with_new_token(path, data, rejected)
+      new_token = refreshed_token
+      if new_token.nil?
+        @on_token_refresh&.call(path:, token: nil, result: rejected)
+        return rejected
+      end
+
+      @token = new_token
+      retried = request(path, data)
+      @on_token_refresh&.call(path:, token: new_token, result: retried)
+      retried
+    end
+
     # A refresh that cannot get a token hands back the original rejection, as a client without
     # refresh would, instead of raising out of a call that was answered.
     def refreshed_token

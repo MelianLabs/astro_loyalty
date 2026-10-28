@@ -126,7 +126,7 @@ client = AstroLoyalty::Client.new(
 )
 ```
 
-`token_refresher` is given the rejected token and may return a newer one (for example a token another process already cached); returning `nil` fetches a new token. `on_token_refresh` is called after each retry with the request path, the new token and the retried call's result.
+`token_refresher` is given the rejected token and may return a newer one (for example a token another process already cached); returning `nil` fetches a new token. `on_token_refresh` is called after each refresh with the request path, the new token and the retried call's result. When no new token could be fetched it is called with `token: nil` and the original rejection as `result`.
 
 ## Development
 

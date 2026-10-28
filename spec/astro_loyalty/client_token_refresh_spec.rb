@@ -119,7 +119,18 @@ RSpec.describe AstroLoyalty::Client do
 
       result = client.customer_status(customer_id: '123')
 
-      expect([result['astro_status'], client.token, refreshes]).to eq([250, 'stale_token', []])
+      expect([result['astro_status'], client.token]).to eq([250, 'stale_token'])
+    end
+
+    it 'reports a refresh that got no token, with the original result' do
+      stub_customer_status('stale_token', invalid_token)
+      allow(described_class).to receive(:post).with('/token/', body: token_body).
+        and_return(double(success?: false, message: 'Unauthorized'))
+
+      client.customer_status(customer_id: '123')
+
+      expect(refreshes).to eq([{ path: '/customerStatus/', token: nil,
+                                 result: { 'astro_status' => 250, 'astro_status_message' => 'Invalid Token' } }])
     end
 
     it 'returns the original Invalid Token envelope when the token request times out' do
